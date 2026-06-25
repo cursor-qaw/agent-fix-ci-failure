@@ -1,0 +1,24 @@
+name: Check Required File
+
+on:
+  pull_request:
+    branches: ["**"]
+  push:
+    branches: ["**"]
+
+jobs:
+  check-required-file:
+    name: Check Required Root File
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check for required-root-file-count.js
+        run: |
+          if [ ! -f "required-root-file-count.js" ]; then
+            echo "❌ Missing required file: required-root-file-count.js"
+            echo "This file must exist at the root of the repository."
+            exit 1
+          fi
+          echo "✅ Found required-root-file-count.js"
