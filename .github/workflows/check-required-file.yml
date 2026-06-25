@@ -14,11 +14,29 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Check for required-root-file-count.js
+      - name: Check numbers.js files contain wordCount variable
         run: |
-          if [ ! -f "required-root-file-count.js" ]; then
-            echo "❌ Missing required file: required-root-file-count.js"
-            echo "This file must exist at the root of the repository."
+          # Find all files named numbers.js anywhere in the repo
+          FILES=$(find . -name "numbers.js" -not -path "./.git/*")
+
+          if [ -z "$FILES" ]; then
+            echo "ℹ️ No numbers.js files found — skipping check."
+            exit 0
+          fi
+
+          FAILED=0
+          for FILE in $FILES; do
+            # Match: var/let/const wordCount, or a plain assignment wordCount =
+            if grep -qE "(var|let|const)\s+wordCount\b|^\s*wordCount\s*=" "$FILE"; then
+              echo "✅ $FILE contains 'wordCount'"
+            else
+              echo "❌ $FILE is missing a 'wordCount' variable"
+              FAILED=1
+            fi
+          done
+
+          if [ $FAILED -eq 1 ]; then
+            echo ""
+            echo "All numbers.js files must declare a 'wordCount' variable."
             exit 1
           fi
-          echo "✅ Found required-root-file-count.js"
